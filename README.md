@@ -2,6 +2,8 @@
 
 GUI for processing videos of rodents, implemented in python and MATLAB. Works for grayscale and RGB movies. Can process multi-camera videos. Some example movies to test the GUI on are located [here](https://drive.google.com/open?id=1cRWCDl8jxWToz50dCX1Op-dHcAC-ttto). You can save the output from both the python and matlab versions as a matlab file with a checkbox in the GUI (if you'd like to use the python version - it has a better GUI).
 
+Forked and modified to allow different approaches for pupil computation. You can check the new box to "use mean of pupil ROI for area," instead of facemap's default of fitting a 2D Gaussian. This works better in my setup because the corneal reflection can move as the eye moves, causing the corneal mask to be misaligned and the pupil fit to falter. If this box is checked, only pupil area and smoothed area are computed. Center of mass remains NaN. Users should make sure to select only the eye, as any inclusion of the eyelid (with the exception of blinks) can mess up the computation. 
+
 # Data acquisition info
 
 IR ILLUMINATION:
