@@ -57,3 +57,4 @@ Temporary Items
 
 .idea*
 __pycache__*
+*.egg-info*
