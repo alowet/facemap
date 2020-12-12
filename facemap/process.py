@@ -178,7 +178,7 @@ def compute_SVD(containers, cumframes, Ly, Lx, avgmotion, ncomps=500, sbin=3, ro
                 U[nr] = usv[0]
     return U
 
-def process_ROIs(containers, cumframes, Ly, Lx, avgmotion, U, sbin=3, tic=None, rois=None, fullSVD=True):
+def process_ROIs(containers, cumframes, Ly, Lx, avgmotion, U, sbin=3, tic=None, rois=None, fullSVD=True, pupil_mean=False):
     # project U onto each frame in the video and compute the motion energy
     # also compute pupil on single frames on non binned data
     # the pixels are binned in spatial bins of size sbin
@@ -257,7 +257,7 @@ def process_ROIs(containers, cumframes, Ly, Lx, avgmotion, U, sbin=3, tic=None, 
                                        rois[p]['xrange'][0]:rois[p]['xrange'][-1]+1]
                 imgp[:, ~rois[p]['ellipse']] = 255
                 com, area, axdir, axlen = pupil.process(imgp.astype(np.float32), rois[p]['saturation'],
-                                                        rois[p]['pupil_sigma'], pupreflector[k])
+                                                        rois[p]['pupil_sigma'], pupreflector[k], pupil_mean=pupil_mean)
                 pups[k]['com'][t:t+nt1,:] = com
                 pups[k]['area'][t:t+nt1] = area
                 pups[k]['axdir'][t:t+nt1,:,:] = axdir
@@ -402,6 +402,7 @@ def run(filenames, parent=None, proc=None, savepath=None):
         Lx = parent.Lx
         fullSVD = parent.checkBox.isChecked()
         save_mat = parent.save_mat.isChecked()
+        pupil_mean = parent.pupil_mean.isChecked()
         sy = parent.sy
         sx = parent.sx
     else:
@@ -411,11 +412,13 @@ def run(filenames, parent=None, proc=None, savepath=None):
             fullSVD = True
             save_mat = False
             rois=None
+            pupil_mean=False
         else:
             sbin = proc['sbin']
             fullSVD = proc['fullSVD']
             save_mat = proc['save_mat']
             rois = proc['rois']
+            pupil_mean = proc['pupil_mean']
             sy = proc['sy']
             sx = proc['sx']   
 
@@ -465,7 +468,7 @@ def run(filenames, parent=None, proc=None, savepath=None):
    
     # project U onto all movie frames
     # and compute pupil (if selected)
-    V, M, pups, blinks, runs = process_ROIs(containers, cumframes, Ly, Lx, avgmotion, U, sbin, tic, rois, fullSVD)
+    V, M, pups, blinks, runs = process_ROIs(containers, cumframes, Ly, Lx, avgmotion, U, sbin, tic, rois, fullSVD, pupil_mean)
 
     # smooth pupil and blinks and running
     print('Smoothing ...')

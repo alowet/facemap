@@ -51,7 +51,7 @@ class MainW(QtGui.QMainWindow):
             self.ops = np.load(opsfile, allow_pickle=True).item()
         except:
             self.ops = {'sbin': 4, 'pupil_sigma': 2., 'fullSVD': False,
-                        'save_path': '', 'save_mat': False}
+                        'save_path': '', 'pupil_mean': False, 'save_mat': False}
 
         self.save_path = self.ops['save_path']
 
@@ -290,6 +290,11 @@ class MainW(QtGui.QMainWindow):
         self.addROI.clicked.connect(self.add_ROI)
         self.addROI.setEnabled(False)
 
+        self.pupil_mean = QtGui.QCheckBox("Use mean of pupil ROI for area")
+        self.pupil_mean.setStyleSheet("color: gray;")
+        if self.ops["pupil_mean"]:
+            self.pupil_mean.toggle()
+
         self.checkBox = QtGui.QCheckBox("Compute multivideo SVD")
         self.checkBox.setStyleSheet("color: gray;")
         if self.ops['fullSVD']:
@@ -302,6 +307,7 @@ class MainW(QtGui.QMainWindow):
 
         self.l0.addWidget(self.comboBox, 1, 0, 1, 3)
         self.l0.addWidget(self.addROI,2,0,1,3)
+        self.l0.addWidget(self.pupil_mean, 19, 0, 1, 3)
         self.l0.addWidget(self.checkBox, 11, 0, 1, 4)
         self.l0.addWidget(self.save_mat, 12, 0, 1, 3)
         self.l0.addWidget(self.savefolder, 13, 0, 1, 3)
@@ -610,9 +616,8 @@ class MainW(QtGui.QMainWindow):
         #print('paused')
 
     def save_ops(self):
-        ops = {'sbin': self.sbin, 'pupil_sigma': float(self.sigmaBox.text()),
-                'save_path': self.save_path, 'fullSVD': self.checkBox.isChecked(),
-                'save_mat': self.save_mat.isChecked()}
+        ops = {'sbin': self.sbin, 'pupil_sigma': float(self.sigmaBox.text()), 'save_path': self.save_path,
+               'pupil_mean': self.pupil_mean.isChecked(), 'fullSVD': self.checkBox.isChecked(), 'save_mat': self.save_mat.isChecked()}
         opsfile = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'ops_user.npy')
         np.save(opsfile, ops)
         return ops
@@ -632,9 +637,9 @@ class MainW(QtGui.QMainWindow):
         else:
             rois = None
         proc = {'Ly':self.Ly, 'Lx':self.Lx, 'sy': self.sy, 'sx': self.sx, 'LY':self.LY, 'LX':self.LX,
-                'sbin': ops['sbin'], 'fullSVD': ops['fullSVD'], 'rois': rois,
+                'sbin': ops['sbin'], 'fullSVD': ops['fullSVD'], 'rois': rois, 'pupil_mean': ops['pupil_mean'],
                 'save_mat': ops['save_mat'], 'save_path': ops['save_path'],
-                'filenames': self.filenames, 'iframes': self.iframes}
+                'filenames': self.filenames}
         savename = process.save(proc, savepath=savepath)
         self.batchlist.append(savename)
         basename,filename = os.path.split(savename)

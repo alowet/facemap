@@ -88,7 +88,7 @@ def fit_gaussian(im, sigma=2.0, do_xy=False, missing=None):
     return mu, sv, u, sv, xy, imout
 
 def process(img, saturation, pupil_sigma=2.0, reflector=None,
-            smooth_time=0, smooth_space=0):
+            smooth_time=0, smooth_space=0, pupil_mean=False):
     ''' get pupil by fitting 2D gaussian
         (only uses pixels darker than saturation) '''
 
@@ -109,18 +109,24 @@ def process(img, saturation, pupil_sigma=2.0, reflector=None,
             if smooth_space > 0:
                 im0 = gaussian_filter(im0, smooth_space)
             im0 = 255.0 - im0
-            im0 = np.maximum(0, im0 - (255.0 - saturation))
-            mu, sig, u, sv, _, _ = fit_gaussian(im0, pupil_sigma,
-                                                do_xy=False, missing=reflector)
+            # XXX: Adam
+            if pupil_mean:
+                area[n] = np.mean(im0)
+            else:
+                im0 = np.maximum(0, im0 - (255.0 - saturation))
+                mu, sig, u, sv, _, _ = fit_gaussian(im0, pupil_sigma,
+                                                    do_xy=False, missing=reflector)
         except:
             mu = np.nan*np.zeros((2,))
             sig = np.nan*np.zeros((2,))
             u   = np.nan*np.zeros((2,2))
             sv   = np.nan*np.zeros((2,))
-        com[n] = mu
-        area[n] = np.pi * (sig[0] * sig[1]) ** 0.5
-        axlen[n] = sv
-        axdir[n] = u
+
+        if not pupil_mean:
+            com[n] = mu
+            area[n] = np.pi * (sig[0] * sig[1]) ** 0.5
+            axlen[n] = sv
+            axdir[n] = u
     return com, area, axdir, axlen
 
 def smooth(area, win=30):
