@@ -1,5 +1,5 @@
 import numpy as np
-from facemap import pupil, running, utils
+from facemap import pupil, running, utils, facemap_to_db
 from numba import vectorize,uint8,float32
 import time
 import os
@@ -492,12 +492,15 @@ def run(filenames, parent=None, proc=None, savepath=None):
             'motion': M,
             'motSVD': V, 'motMask': U, 'motMask_reshape': U_reshape,
             'pupil': pups, 'running': runs, 'blink': blinks, 'rois': rois,
-            'sy': sy, 'sx': sx
+            'sy': sy, 'sx': sx, 'pupil_mean': pupil_mean
             } 
     
     # save processing
     savename = save(proc, savepath)
     utils.close_videos(containers)
     print('run time %0.2fs'%(time.time() - start))
+
+    # XXX: Adam
+    facemap_to_db.insert(proc, savename)
 
     return savename
